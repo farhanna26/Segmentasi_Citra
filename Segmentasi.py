@@ -21,13 +21,16 @@ def get_kernels(method):
         return None, None
     return kx, ky
 
-# --- 2. FUNGSI EDGE DETECTION (TIDAK BERUBAH) ---
+# --- 2. FUNGSI EDGE DETECTION ---
 def edge_detection(img, method):
     img_float = img.astype(np.float32)
     kx, ky = get_kernels(method)
     ix = cv2.filter2D(img_float, -1, kx)
     iy = cv2.filter2D(img_float, -1, ky)
+    
+    # PERBAIKAN: Gunakan pangkat 2 (**2), bukan dikali 2 (*2)
     magnitude = np.sqrt(ix*2 + iy*2)
+    
     magnitude = np.clip(magnitude, 0, 255).astype(np.uint8)
     return magnitude
 
@@ -54,7 +57,7 @@ def add_gaussian(img, level):
 # --- 4. LOAD & PROCESS ---
 
 # Ganti dengan nama file kamu
-IMG_PATH = 'Greyscale.png' 
+IMG_PATH = 'Greyscale.jpg'
 img_original = cv2.imread(IMG_PATH, cv2.IMREAD_GRAYSCALE)
 
 if img_original is None:
@@ -65,10 +68,10 @@ else:
 
     images = {
         "Original Grayscale": img_original,
-        "Salt & Pepper Lvl 1": add_salt_pepper(img_original, level=1),
-        "Salt & Pepper Lvl 2": add_salt_pepper(img_original, level=2),
-        "Gaussian Lvl 1 (Sig 10)": add_gaussian(img_original, level=1),
-        "Gaussian Lvl 2 (Sig 20)": add_gaussian(img_original, level=2),
+        "Salt & Pepper Lvl 1\n(Rasio 0.02)": add_salt_pepper(img_original, level=1),
+        "Salt & Pepper Lvl 2\n(Rasio 0.05)": add_salt_pepper(img_original, level=2),
+        "Gaussian Lvl 1\n(Sigma 10)": add_gaussian(img_original, level=1),
+        "Gaussian Lvl 2\n(Sigma 20)": add_gaussian(img_original, level=2),
     }
 
     methods = ['roberts', 'prewitt', 'sobel', 'freichen']
@@ -77,16 +80,14 @@ else:
     num_cols = len(methods) + 1 
 
     # --- SETTING VISUALISASI ---
-    # facecolor='black' agar background hitam
-    plt.figure(figsize=(18, 4 * num_images), facecolor='black')
+    plt.figure(figsize=(18, 5 * num_images), facecolor='black') # Tinggi diperbesar sedikit
     
     idx = 1
     for img_name, img_data in images.items():
         # Plot Input
         plt.subplot(num_images, num_cols, idx)
         plt.imshow(img_data, cmap='gray')
-        # color='lime' agar tulisan jadi HIJAU CERAH (Neon)
-        plt.title(f"Input: {img_name}", fontsize=10, color='lime', fontweight='bold') 
+        plt.title(f"Input: {img_name}", fontsize=11, color='lime', fontweight='bold', pad=10) 
         plt.axis('off')
         idx += 1
 
@@ -96,10 +97,13 @@ else:
             
             plt.subplot(num_images, num_cols, idx)
             plt.imshow(result, cmap='gray')
-            # color='lime' agar tulisan jadi HIJAU CERAH (Neon)
-            plt.title(f"{method.capitalize()}", fontsize=10, color='lime', fontweight='bold')
+            plt.title(f"{method.capitalize()}", fontsize=11, color='lime', fontweight='bold', pad=10)
             plt.axis('off')
             idx += 1
 
-    plt.tight_layout()
+    # --- PENGATURAN JARAK (SPACING) ---
+    # hspace = jarak vertikal antar baris
+    # wspace = jarak horizontal antar kolom
+    plt.subplots_adjust(top=0.95, bottom=0.05, hspace=0.4, wspace=0.3)
+    
     plt.show()
